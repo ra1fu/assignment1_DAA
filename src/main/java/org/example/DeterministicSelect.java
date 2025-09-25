@@ -13,7 +13,7 @@ public class DeterministicSelect implements Algorithm<int[], Integer> {
     @Override
     public Integer run(int[] arr) {
         int[] copy = arr.clone();
-        return select(copy, 0, copy.length - 1, k);
+        return select(copy, 0, copy.length - 1, k - 1);
     }
 
     private static int select(int[] arr, int left, int right, int k) {
@@ -22,10 +22,13 @@ public class DeterministicSelect implements Algorithm<int[], Integer> {
         int pivot = medianOfMedians(arr, left, right);
         int pivotIndex = partition(arr, left, right, pivot);
 
-        int length = pivotIndex - left + 1;
-        if (k == length) return arr[pivotIndex];
-        else if (k < length) return select(arr, left, pivotIndex - 1, k);
-        else return select(arr, pivotIndex + 1, right, k - length);
+        if (k == pivotIndex) {
+            return arr[pivotIndex];
+        } else if (k < pivotIndex) {
+            return select(arr, left, pivotIndex - 1, k);
+        } else {
+            return select(arr, pivotIndex + 1, right, k);
+        }
     }
 
     private static int medianOfMedians(int[] arr, int left, int right) {
@@ -45,18 +48,32 @@ public class DeterministicSelect implements Algorithm<int[], Integer> {
         return medianOfMedians(medians, 0, medians.length - 1);
     }
 
-    private static int partition(int[] arr, int left, int right, int pivot) {
-        while (left <= right) {
-            while (arr[left] < pivot) left++;
-            while (arr[right] > pivot) right--;
-            if (left <= right) {
-                int tmp = arr[left];
-                arr[left] = arr[right];
-                arr[right] = tmp;
-                left++;
-                right--;
+    private static int partition(int[] arr, int left, int right, int pivotValue) {
+        int pivotIndex = left;
+        for (int i = left; i <= right; i++) {
+            if (arr[i] == pivotValue) {
+                pivotIndex = i;
+                break;
             }
         }
-        return left - 1;
+
+        swap(arr, pivotIndex, right);
+        int storeIndex = left;
+
+        for (int i = left; i < right; i++) {
+            if (arr[i] < pivotValue) {
+                swap(arr, storeIndex, i);
+                storeIndex++;
+            }
+        }
+
+        swap(arr, storeIndex, right);
+        return storeIndex;
+    }
+
+    private static void swap(int[] arr, int i, int j) {
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
     }
 }
